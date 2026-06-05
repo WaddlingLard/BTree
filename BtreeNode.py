@@ -2,9 +2,11 @@ class BtreeNode:
 
     def __init__(self, size):
         self.node: list = []
-        self.size: int = 0
-        self.is_leaf: bool = True 
-
+    # Insert - insert an element into the node
+    # Params:
+    #   item - a generic that can be compared (wip)
+    #   compartor() - sorts the insertion correctly (UNUSED)
+    # Returns (bool) - Are the invariants valid?
     def insert(self, item) -> bool:
 
         # Size check, cannot add more than limit but should consider to handle in Btree instead of here
