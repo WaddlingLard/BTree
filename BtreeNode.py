@@ -1,7 +1,12 @@
 class BtreeNode:
 
-    def __init__(self, size):
+    def __init__(self, keys: int, is_leaf: bool = True):
         self.node: list = []
+        self.children: list[BtreeNode] = []
+        self.node_size: int = keys
+        self.is_leaf: bool = is_leaf
+        self.number_of_children: int = keys + 1 if is_leaf is not True else 0
+
     # Insert - insert an element into the node
     # Params:
     #   item - a generic that can be compared (wip)
