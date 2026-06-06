@@ -113,4 +113,24 @@ def test_insert_full_btreenode():
 
     # Node violates the invariant
     assert node.insert(5) == False
+    assert binary_search(node.node, 5) == 4
     del node
+
+def test_insert_till_full_btreenode():
+    node: BtreeNode = BtreeNode(4)
+    
+    node.insert(1)
+    node.insert(2)
+    node.insert(3)
+
+    assert node.insert(4) == True
+    assert node.insert(5) == False
+    assert binary_search(node.node, 5) == 4
+    del node
+
+def test_insert_duplicate_key_btreenode():
+    node: BtreeNode = BtreeNode(4)
+    node.node = [1]
+
+    with pytest.raises(Exception, match="Duplicate Key"):
+        node.insert(1)
