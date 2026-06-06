@@ -44,12 +44,37 @@ class Btree:
             # Set the new parent node
             self.root = new_root
 
+    # From the root, collect all the children and return them (unsure how to do order)
+    # Params:
+    #   method_of_retrieval - depth or breadth
+    # Returns (list[BtreeNode]) - children
+    def retrieve_children(self) -> list[BtreeNode]:
+        # Just getting from root, will need to implement recursive gathering
+        children: list[BtreeNode] = []
+        children.extend(self.root.get_children())
+        return children
+
+    def output_root(self) -> str:
+        # return print(self.root.print_node())
+        return self.root.print_node()
+
+
     def output_tree(self) -> str:
-        print(self.root or 'Tree is empty')
+        # print(self.root.print_node())
+        pass
 
 if __name__ == '__main__':
     print('Hello, World!')
 
     btree = Btree(4)
-    btree.output_tree()
-    
+    btree.insert(1)
+    btree.insert(4)
+    btree.insert(3)
+    btree.insert(6)
+    btree.insert(10)
+    # btree.insert(10)
+    # btree.insert(76)
+    # btree.output_tree()
+    btree.output_root()
+
+    del btree
