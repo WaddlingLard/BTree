@@ -61,8 +61,19 @@ class BtreeNode:
         self.node = self.node[:start_index]
         return values_to_extract
     
+    def get_children(self) -> list[any]:
+        return [*self.children]
 
     def get_size(self) -> int:
-        return self.size
+        return len(self.node)
+    
+    def get_node_contents(self) -> list[any]:
+        return [*self.node]
+
+    # def get_max_size(self) -> int:
+    #     return self.node_size
+    
+    def print_node(self) -> str:
+        return str(self.node)
 
     
