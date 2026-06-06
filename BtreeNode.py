@@ -37,7 +37,16 @@ class BtreeNode:
         self.node.insert(current_index, item)
 
         # Do we need to split?
-        return self.node_size > len(self.node)
+    
+    # Split - split the node with a provided range
+    # Params:
+    #   range - inclusive range of indexes that will be extracted
+    #   
+    def split(self, start_index: int) -> list[any]:
+        values_to_extract: list[any] = self.node[start_index:]
+        self.node = self.node[:start_index]
+        return values_to_extract
+    
 
     def get_size(self) -> int:
         return self.size
