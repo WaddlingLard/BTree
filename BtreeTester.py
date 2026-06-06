@@ -65,11 +65,54 @@ def test_create_btree_odd_keys():
     assert btree.max_keys == 3 and btree.min_keys == 1
     del btree
 
-# def test_insert_empty_root_btree():
-#     btree: Btree = Btree(4)
+def test_exists_after_insert_root_btree():
+    btree: Btree = Btree(4)
+    
+    btree.insert(1)
 
-#     assert btree.insert(1) == False
+    assert btree.exists(1) == True
+    del btree
+
+def test_exists_empty_root_btree():
+    btree: Btree = Btree(4)
+    
+    assert btree.exists(1) == False
+    del btree
+
+# def test_not_exists_after_insert_root_btree():
+#     btree: Btree = Btree(4)
+    
+#     btree.insert(1)
+
+#     assert btree.exists(2) == False
 #     del btree
+
+def test_insert_split_full_root_check_root_btree():
+    btree: Btree = Btree(4)
+    btree.root.node = [1,2,4,5]
+
+    btree.insert(3)
+
+    assert f'{btree.output_root()}' == '[3]'
+    del btree
+
+def test_insert_split_full_root_validate_children_btree():
+    btree: Btree = Btree(4)
+    btree.root.node = [1,2,4,5]
+
+    btree.insert(3)
+
+    result: list[BtreeNode] = btree.retrieve_children()
+    num_of_children = len(result)
+
+    contents: list[list[any]] = [x.get_node_contents() for x in result]
+
+    assert num_of_children == 2
+    assert contents == [[1,2],[4,5]]
+    # assert f'{btree.output_root()}' == '[3]'
+    del btree
+
+
 
 # def test_insert_partial_root_btree():
 #     btree: Btree = Btree(4)
@@ -84,6 +127,20 @@ def test_create_btree_odd_keys():
 
 #     assert btree.insert(5) == True
 #     del btree
+
+def test_insert_full_root_no_split_check_root_btree():
+    btree: Btree = Btree(4)
+
+    btree.insert(1)
+    btree.insert(4)
+    btree.insert(3)
+    btree.insert(6)
+
+    # Disabled splitting so 10 stays in the root
+    btree.insert(10, True)
+    
+    assert btree.exists(10) == True
+    del btree
 
 # -------------------------------
 ## BTREENODE TESTS
