@@ -33,10 +33,11 @@ class BtreeNode:
             else:
                 # Maybe implement proper error handling, but for now its sufficient 
                 print('Inserting Duplicate Key! Failed Insertion')
-                return False 
+                raise Exception('Error: Duplicate Key')
         self.node.insert(current_index, item)
 
         # Do we need to split?
+        return self.node_size >= len(self.node)
     
     # Split - split the node with a provided range
     # Params:
