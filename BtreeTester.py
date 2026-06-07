@@ -70,6 +70,46 @@ def test_search_many_element_failure():
     
     assert binary_search(vals, 6) == -1
 
+def test_child_search_single_element_left_child():
+    vals: list[int] = [3]
+
+    assert child_search(vals, 0) == 0
+
+def test_child_search_single_element_right_child():
+    vals: list[int] = [3]
+
+    assert child_search(vals, 5) == 1
+
+def test_child_search_two_element_left_child():
+    vals: list[int] = [3, 7]
+    
+    assert child_search(vals, 0) == 0
+
+def test_child_search_two_element_middle_child():
+    vals: list[int] = [3, 7]
+    
+    assert child_search(vals, 4) == 1
+
+def test_child_search_two_element_last_child():
+    vals: list[int] = [3, 7]
+    
+    assert child_search(vals, 8) == 2
+
+def test_child_search_multi_element_leftmost_child():
+    vals: list[int] = [1, 6, 11, 39, 100, 1356]
+
+    assert child_search(vals, 0) == 0
+
+def test_child_search_multi_element_inner_child():
+    vals: list[int] = [1, 6, 11, 39, 100, 1356]
+
+    assert child_search(vals, 54) == 4
+
+def test_child_search_multi_element_rightmost_child():
+    vals: list[int] = [1, 6, 11, 39, 100, 1356]
+
+    assert child_search(vals, 2000) == 6
+
 # -------------------------------
 ## BTREE TESTS
 # -------------------------------
