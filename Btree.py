@@ -1,5 +1,5 @@
 from BtreeNode import BtreeNode
-from binary_search import binary_search as search
+from search_methods import child_search as amber_alert, binary_search as search
 import math
 
 class Btree:
@@ -18,10 +18,38 @@ class Btree:
         return search(self.root.get_node_contents(), value) != -1
         # Note: Need to alter search when it fails to find the last value it attempted searching
 
-    def insert(self, value, disable_split: bool = False):
+    # Inserts a value into the tree, handles split nodes if invariants are violated
+    # Params:
+    #   value (object) - Object to be inserted the tree (Should have a comparison system established)
+    #   disable_split (bool) - USED FOR TESTING (Likely be removed later) Prevents splitting of nodes 
+    # Returns (none) - nothing is returned (for now)
+    def insert(self, value: object, disable_split: bool = False) -> None:
 
         # Insertion should look for deepest node
-        invariant_check = self.root.insert(value) 
+        # It is safe to make the assumption that if a key (from non-leaf node)
+        # has one child, it should also have a child for the inverse relation
+        # Ex: (Less Than Node) Key (Greater Than Node)
+        # invariant_check = self.root.insert(value) 
+
+        # Process of finding which path to branch
+        # 1. From the root, first use a system to compare with the root to find appropriate range
+        # 2. Retrieve the child that belongs down that path and:
+        #   A. Repeat if not a leaf node 
+        #   B. If leaf node, insert!
+        # Handle splitting logic after... 
+        current_node: BtreeNode = self.root
+
+        while not current_node.get_leaf_status():
+
+            # Retrieve the children of that node
+            child_nodes: list[BtreeNode] = current_node.get_children()
+
+            # Must have child nodes so we are going to find the index where it is
+            child_index: int = amber_alert(current_node.get_node_contents(), value)
+            
+            current_node = child_nodes[child_index] 
+
+        invariant_check = current_node.insert(value)
 
         if disable_split:
             # print('split disabled')
