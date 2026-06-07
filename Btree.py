@@ -58,10 +58,54 @@ class Btree:
         # return print(self.root.print_node())
         return self.root.print_node()
 
+    # Outputs the whole tree, useful for debugging
+    def output_tree(self) -> None:
 
-    def output_tree(self) -> str:
-        # print(self.root.print_node())
-        pass
+        queue: list[BtreeNode] = [self.root]
+        
+        node_level: int = 0
+
+        # Can't use templates for this :(
+        # node_contents: Template = t'{[x.get_node_contents() for x in queue]}'
+        # node_str: Template = t'Level: {node_level} {node_contents.interpolations[0].value}'
+        
+        get_node_contents: function = lambda list_of_nodes: f'{[x.get_node_contents() for x in list_of_nodes]}'
+        create_node_str: function = lambda level, contents: f'{level} {contents}'
+
+        # Holds the next layer of nodes before pushing onto the queue
+        buffer: list[BtreeNode] = []
+
+        output: str = ''
+
+        output += f'{create_node_str(node_level, get_node_contents(queue))}\n'
+        # output += f'{node_str.strings[0]} {node_str.interpolations[0].value} {node_str.interpolations[1].value}\n'
+
+        while len(queue) != 0:
+            
+            current_node: BtreeNode = queue.pop(0)
+            
+            if not current_node.get_leaf_status():
+                # Load up the buffer with the children
+                buffer.extend(current_node.get_children())
+
+            if len(queue) != 0:
+                # Still more work to do
+                continue
+
+            # Apply any work from the buffer over and append the new output to the string
+            queue.extend(buffer)
+            buffer.clear()
+
+            if len(queue) == 0:
+                # No more work to do
+                break;
+
+            node_level += 1
+            output += f'{create_node_str(node_level, get_node_contents(queue))}\n'
+            # output += f'{node_str.strings[0]} {node_str.interpolations[0].value} {node_str.interpolations[1].value}\n'
+
+        print(output)
+
 
 if __name__ == '__main__':
     print('Hello, World!')
