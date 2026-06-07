@@ -2,7 +2,25 @@ import pytest
 
 from Btree import Btree
 from BtreeNode import BtreeNode
-from binary_search import binary_search
+from search_methods import binary_search
+
+# -------------------------------
+## SETUP METHODS
+# -------------------------------
+
+# Split_btree_1 - Creates a btree that has a split occur so there is a root pointing to two children
+# Returns (Btree)
+def split_btree_1() -> Btree:
+    btree: Btree = Btree(4)
+
+    # Insertions will create a split
+    btree.insert(1)
+    btree.insert(2)
+    btree.insert(3)
+    btree.insert(4)
+    btree.insert(5)
+
+    return btree
 
 # -------------------------------
 ## UTILITY TESTS
@@ -114,7 +132,34 @@ def test_insert_split_full_root_validate_children_btree():
     # assert f'{btree.output_root()}' == '[3]'
     del btree
 
+def test_insert__left_child_split_btree_1():
+    btree: Btree = split_btree_1()
 
+    btree.insert(0)
+
+    assert btree.retrieve_children()[0].search(0) == 0
+    del btree
+
+def test_insert_split_full_child_validate_children_btree():
+    btree: Btree = split_btree_1()
+
+    # Fill child node
+    btree.insert(6)
+    btree.insert(7)
+
+    # New split occurs with this insertion
+    btree.insert(8)
+
+    result: list[BtreeNode] = btree.retrieve_children()
+    num_of_children: int = len(result)
+
+    contents: list[list[any]] = [x.get_node_contents() for x in result]
+
+    assert num_of_children == 2
+    assert contents == [[1,2],[4,5],[7,8]]
+    assert btree._get_root().print_node() == [3,6]
+    
+    del btree
 
 # def test_insert_partial_root_btree():
 #     btree: Btree = Btree(4)
