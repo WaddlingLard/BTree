@@ -2,7 +2,7 @@ import pytest
 
 from Btree import Btree
 from BtreeNode import BtreeNode
-from search_methods import binary_search
+from search_methods import binary_search, child_search
 
 # -------------------------------
 ## SETUP METHODS
