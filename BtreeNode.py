@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Self
 
 class BtreeNode:
 
@@ -7,18 +7,20 @@ class BtreeNode:
             keys: int, 
             existing_keys: list[Any] | Any | None = None, 
             is_leaf: bool = True, 
-            children: list[Any] | Any | None = None,
+            children: list[Self] | Self | None = None,
+            parent: Self | None = None,
             ):
 
         # Handle a single key fed into constructor        
         # if existing_keys != None and not isinstance(existing_keys, list):
         #     existing_keys: list[T] = [existing_keys]
 
-        self.node: list = existing_keys if existing_keys != None else []
-        self.children: list[BtreeNode] = children if children != None else []
+        self.node: list[any] = existing_keys if existing_keys != None else []
+        self.children: list[Self] = children if children != None else []
         self.node_size: int = keys
         self.is_leaf: bool = is_leaf
         self.number_of_children: int = keys + 1 if is_leaf is not True else 0
+        self.parent: Self | None = None
 
     # Insert - insert an element into the node
     # Params:
