@@ -53,18 +53,52 @@ class BtreeNode:
 
         # Do we need to split?
         return self.node_size >= len(self.node)
+
+    # Insert a child into the list of children
+    # Params:
+    #   child_node (BtreeNode) - child to insert from a split node
+    #   index (int) - calculated index using the child_search()
+    def insert_child(self, child_node: Self, index: int) -> None:
+        self.children.insert(index, child_node)
+
+    # Assigns the child node with a parent node
+    # Params:
+    #   parent (BtreeNode) - The node higher up the tree relative to the child (self)
+    def assign_parent(self, parent: Self) -> None:
+        self.parent = parent
     
-    # Split - split the node with a provided range
+    # Search - searches for the item inside the current node
+    def search(self, item) -> int:
+        return binary_search(self.node, item)
+    
+    # Split the node with a provided range
     # Params:
     #   range - inclusive range of indexes that will be extracted
-    #   
+    # Returns (list[any]) - the elements that will be repacked into a new node   
     def split(self, start_index: int) -> list[any]:
-        values_to_extract: list[any] = self.node[start_index:]
+        values_to_extract: list[any] = [*self.node[start_index:]]
         self.node = self.node[:start_index]
         return values_to_extract
     
-    def get_children(self) -> list[any]:
+    # Split the children with a provided range (signed by a judge)
+    # Params:
+    #   range - inclusive range of indexes that will be extracted
+    # Returns (list[BtreeNode]) - the nodes that will be rehomed into a new node
+    def split_children(self, start_index: int) -> list[any]:
+        children_to_extract: list[Self] = [*self.children[start_index:]]
+        self.children = self.children[:start_index]
+        return children_to_extract
+
+    def get_leaf_status(self) -> bool:
+        return self.is_leaf
+
+    # Gets the children of the node
+    # Returns (list[BtreeNode]) - The children objects
+    def get_children(self) -> list[Self]:
         return [*self.children]
+    
+    def get_parental_status(self) -> Self:
+        return self.parent
 
     def get_size(self) -> int:
         return len(self.node)
