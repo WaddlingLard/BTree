@@ -49,10 +49,9 @@ class Btree:
             
             current_node = child_nodes[child_index] 
 
-        invariant_check = current_node.insert(value)
+        valid_invariant = current_node.insert(value)
 
-        if disable_split:
-            # print('split disabled')
+        if valid_invariant or disable_split:
             return
 
         # Have to split node where invariant is violated
@@ -60,44 +59,46 @@ class Btree:
         # 1. Split the childs keys and only keep the leftmost portion of the list
         # 2. With the extracted keys, create a sibling node and bubble up the middle key
         # 3. If no more invariants violated, carry on, otherwise recursion
-        extracted_keys: list[any] = current_node.split(self.min_keys)
-        
-        # Retrieve parent if exists
-        parent_node: BtreeNode | None = current_node.get_parental_status()
+        while not valid_invariant:
 
-        # If parent_node is None that means this must be the root
-        # Create and prepare nodes
-        left_child: BtreeNode = current_node
-        right_child: BtreeNode = BtreeNode(self.max_keys, extracted_keys[1:])
-        
-        if parent_node != None:
+            extracted_keys: list[any] = current_node.split(self.min_keys)
+            extracted_children: list[BtreeNode] = current_node.split_children(self.min_keys) if not current_node.get_leaf_status() else []
+            has_children: bool = len(extracted_children) != 0
+
+            # Retrieve parent if exists
+            parent_node: BtreeNode | None = current_node.get_parental_status()
+
+            # If parent_node is None that means this must be the root
+            # Create and prepare nodes
+            left_child: BtreeNode = current_node
+            right_child: BtreeNode = BtreeNode(self.max_keys, extracted_keys[1:], is_leaf=not has_children, children=extracted_children)
             
-            # There is a parent, assign to new child
-            right_child.assign_parent(parent_node)
+            if parent_node != None:
+
+                # There is a parent, assign to new child
+                right_child.assign_parent(parent_node)
+                
+                # Bubble up middle key and save new child node
+                middle_key: any = extracted_keys[0]
+
+                # Since we are always creating a right child, the index for the child node relative
+                # to the key index should be +1
+                valid_invariant = parent_node.insert(middle_key)
+                parent_node.insert_child(right_child, parent_node.search(middle_key) + 1)            
+                current_node = parent_node
+
+            else:
+                # There is no parent, make it
+                new_root: BtreeNode = BtreeNode(self.max_keys, extracted_keys[:1], False, [left_child, right_child])
+                parent_node = new_root
+
+                # Assign to children
+                left_child.assign_parent(parent_node)
+                right_child.assign_parent(parent_node)
             
-            # Bubble up middle key and save new child node
-            middle_key: any = extracted_keys[0]
-
-            # Since we are always creating a right child, the index for the child node relative
-            # to the key index should be +1
-            valid_invariant = parent_node.insert(middle_key)
-            parent_node.insert_child(right_child, parent_node.search(middle_key) + 1)
-
-            # NOTE: Need to account for recursion
-            
-        else:
-            # There is no parent, make it
-            new_root: BtreeNode = BtreeNode(self.max_keys, extracted_keys[:1], False, [left_child, right_child])
-            parent_node = new_root
-
-            # Assign to children
-            left_child.assign_parent(parent_node)
-            right_child.assign_parent(parent_node)
-        
-            # Set the new root node because there was no parent before this
-            self.root = parent_node
-
-
+                # Set the new root node because there was no parent before this
+                self.root = parent_node
+                valid_invariant = True
 
     # From the root, collect all the children and return them (unsure how to do order)
     # Params:
