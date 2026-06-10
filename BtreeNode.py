@@ -1,4 +1,5 @@
 from typing import Any, Self
+from search_methods import binary_search
 
 class BtreeNode:
 
