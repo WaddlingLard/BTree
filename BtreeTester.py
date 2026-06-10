@@ -22,6 +22,30 @@ def split_btree_1() -> Btree:
 
     return btree
 
+def split_btree_2() -> Btree:
+    btree: Btree = Btree(4)
+
+    btree.insert(-2)
+    btree.insert(-1)
+    btree.insert(1)
+    btree.insert(3)
+    btree.insert(4)
+    btree.insert(5)
+    btree.insert(7)
+    btree.insert(8)
+    btree.insert(11)
+    btree.insert(12)
+    btree.insert(13)
+    btree.insert(18)
+    btree.insert(19)
+    btree.insert(20)
+    
+    # These are filling a child prep for a split on that node
+    btree.insert(14)
+    btree.insert(15)
+
+    return btree
+
 # -------------------------------
 ## UTILITY TESTS
 # -------------------------------
@@ -153,7 +177,7 @@ def test_insert_split_full_root_check_root_btree():
 
     btree.insert(3)
 
-    assert f'{btree.output_root()}' == '[3]'
+    assert f'{btree.root.get_node_contents()}' == '[3]'
     del btree
 
 def test_insert_split_full_root_validate_children_btree():
@@ -172,7 +196,7 @@ def test_insert_split_full_root_validate_children_btree():
     # assert f'{btree.output_root()}' == '[3]'
     del btree
 
-def test_insert__left_child_split_btree_1():
+def test_insert_left_child_split_btree_1():
     btree: Btree = split_btree_1()
 
     btree.insert(0)
@@ -180,7 +204,7 @@ def test_insert__left_child_split_btree_1():
     assert btree.retrieve_children()[0].search(0) == 0
     del btree
 
-def test_insert_split_full_child_validate_children_btree():
+def test_insert_split_full_right_child_validate_children_btree():
     btree: Btree = split_btree_1()
 
     # Fill child node
@@ -195,11 +219,38 @@ def test_insert_split_full_child_validate_children_btree():
 
     contents: list[list[any]] = [x.get_node_contents() for x in result]
 
-    assert num_of_children == 2
+    assert num_of_children == 3
     assert contents == [[1,2],[4,5],[7,8]]
-    assert btree._get_root().print_node() == [3,6]
+    assert btree._get_root().print_node() == str([3,6])
     
     del btree
+
+def test_insert_split_full_left_child_validate_children_btree():
+    btree: Btree = split_btree_1()
+
+    btree.insert(0)
+    btree.insert(-1)
+
+    # Split occurs with this insertion
+    btree.insert(-2)
+
+    result: list[BtreeNode] = btree.retrieve_children()
+    num_of_children: int = len(result)
+
+    contents: list[list[any]] = [x.get_node_contents() for x in result]
+
+    assert num_of_children == 3
+    assert contents == [[-2,-1],[1,2],[4,5]]
+    assert btree._get_root().print_node() == str([0,3])
+
+# def test_insert_recursive_split_on_full_root_validate_btree():
+    # btree: Btree = split_btree_2
+
+    # Split that will lead to a root split
+    # btree.insert(16)
+
+    # assert num_of_children = 
+
 
 # def test_insert_partial_root_btree():
 #     btree: Btree = Btree(4)
