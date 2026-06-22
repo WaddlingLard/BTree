@@ -1,6 +1,10 @@
 from BtreeNode import BtreeNode
 from search_methods import child_search as amber_alert, binary_search as search
 import math
+from typing import Literal
+from collections.abc import Callable
+from enum import Enum
+# from string.templatelib import Template
 
 class Btree:
 
@@ -99,6 +103,72 @@ class Btree:
                 # Set the new root node because there was no parent before this
                 self.root = parent_node
                 valid_invariant = True
+
+
+    # A handy method to validate all invariants for the Btree
+    # and it will return the fussy BtreeNode that is violating the constraint
+    # NOTE: Should this account for multiple violations? Is that even possible?
+    def validate_invariants(self) -> BtreeNode | None:
+
+        class NodeType(Enum):
+            ROOT = 'root',
+            INNER = 'inner',
+            LEAF = 'leaf',
+            UNKNOWN = 'unknown'
+
+        nonl_invari_rule: list[Callable[[BtreeNode]], bool] = [lambda node: node.get_children() and len(node.get_children()) - 1 == len(node.get_node_contents())]
+        node_level: int = 0
+        lowest_level: int | None = None
+
+        queue: list[tuple[BtreeNode, int]] = [(self.root, node_level)]
+        buffer: list[BtreeNode] = []
+        type_of_node: NodeType = NodeType.UNKNOWN
+        rule_book: dict[NodeType, list[Callable[[BtreeNode | int], bool]]] = { 
+            NodeType.ROOT: [*nonl_invari_rule, lambda node: node.get_leaf_status() or len(node.get_children()) >= 2], 
+            NodeType.INNER: [*nonl_invari_rule, lambda node: len(node.get_children()) > math.ceil(self.max_keys / 2)],
+            NodeType.LEAF: [lambda node: len(node.get_children()) == 0],
+            # NodeType.UNKNOWN: []
+            }
+
+        while len(queue) != 0:
+
+            type_of_node = NodeType.UNKNOWN
+            queued_node: tuple[BtreeNode, int] = queue.pop(0)
+            current_node_level: int = queued_node[1]
+            current_node: BtreeNode = queued_node[0] 
+            is_leaf: bool = current_node.get_leaf_status()
+
+            if len(current_node.get_node_contents()) > self.max_keys:
+                # Key size invariant violated
+                return current_node
+
+            # Find what node it is
+            if current_node == self.root:
+                type_of_node = NodeType.ROOT
+            elif not is_leaf and current_node.get_parental_status() != None:
+                type_of_node = NodeType.INNER
+            elif is_leaf:
+                lowest_level = current_node_level if lowest_level == None else lowest_level
+                type_of_node = NodeType.LEAF
+
+            # Validate the node
+            rules: list[Callable[[BtreeNode], bool]] = rule_book[type_of_node]
+            checks: list[bool] = [rule(current_node) for rule in rules]
+            
+            if False in checks or (is_leaf and current_node_level != lowest_level):
+                return current_node
+
+            # Add more nodes to the buffer
+            if not is_leaf:
+                buffer.extend(current_node.get_children())
+
+            if len(queue) != 0:
+                continue
+
+            # New layer of nodes
+            node_level += 1
+            queue.extend([(node, node_level) for node in buffer])
+            buffer.clear()
 
     # From the root, collect all the children and return them (unsure how to do order)
     # Params:
