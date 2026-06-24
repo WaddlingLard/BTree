@@ -17,9 +17,26 @@ class Btree:
     # Params:
     #   value - item to be searched for
     # Returns (bool) - did it find it?
-    def exists(self, value) -> bool:
+    def exists(self, value) -> BtreeNode | None:
         # Check the root for the val
-        return search(self.root.get_node_contents(), value) != -1
+        current_node: BtreeNode = self.root
+        
+        while current_node != None:
+            results: tuple[SearchResult, int] = current_node.search(amber_alert, value, ignore_hit=False)
+            # print(results)
+            
+            search_result, index = results
+            match search_result:
+                case (SearchResult.FOUND_ITEM):
+                    return current_node
+                case (SearchResult.NOT_FOUND):
+                    return None
+                case (SearchResult.CHILD_LOCATED):
+                    if current_node.get_leaf_status():
+                        return None
+                        
+                    current_node = current_node.get_child(index)
+
         # Note: Need to alter search when it fails to find the last value it attempted searching
 
     # Inserts a value into the tree, handles split nodes if invariants are violated
