@@ -121,6 +121,21 @@ class Btree:
                 self.root = parent_node
                 valid_invariant = True
 
+    
+    # This is going to be a tricky method, many cases to account for and recursion is likely
+    def delete(self, key: object) -> object:
+
+        # Locate which node contains the value
+        node_location: BtreeNode = self.exists(key)
+        
+        if node_location == None:
+            print("Key doesn't exist in the Btree!")
+
+        # Simple deletion for now
+        returned_key: object = node_location.delete(key)
+
+        return returned_key
+
 
     # A handy method to validate all invariants for the Btree
     # and it will return the fussy BtreeNode that is violating the constraint
