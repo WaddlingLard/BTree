@@ -193,6 +193,8 @@ class Btree:
 
             # Find what node it is
             if current_node == self.root:
+                # Root can also be setting the lowest_level invar check
+                lowest_level = current_node_level if is_leaf else None
                 type_of_node = NodeType.ROOT
             elif not is_leaf and current_node.get_parental_status() != None:
                 type_of_node = NodeType.INNER
