@@ -60,14 +60,21 @@ class Btree:
         # Handle splitting logic after... 
         current_node: BtreeNode = self.root
 
+        # Ensure the tree already doesn't contain the element
+        if self.exists(value) != None:
+            # Already has element
+            print('Key is already present in the Btree!')
+            return
+
         while not current_node.get_leaf_status():
 
             # Retrieve the children of that node
             child_nodes: list[BtreeNode] = current_node.get_children()
 
             # Must have child nodes so we are going to find the index where it is
-            child_index: int = amber_alert(current_node.get_node_contents(), value)
-            
+            search_result: tuple[SearchResult, int] = amber_alert(current_node.get_node_contents(), value)
+            result, child_index = search_result
+
             current_node = child_nodes[child_index] 
 
         valid_invariant = current_node.insert(value)
