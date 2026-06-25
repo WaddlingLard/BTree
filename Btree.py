@@ -148,18 +148,35 @@ class Btree:
             LEAF = 'leaf',
             UNKNOWN = 'unknown'
 
-        nonl_invari_rule: list[Callable[[BtreeNode]], bool] = [lambda node: node.get_children() and len(node.get_children()) - 1 == len(node.get_node_contents())]
+        class InvariantCheck(Enum):
+            CHILDREN = 'children',
+            KEYS = 'keys'
+
         node_level: int = 0
         lowest_level: int | None = None
 
         queue: list[tuple[BtreeNode, int]] = [(self.root, node_level)]
         buffer: list[BtreeNode] = []
         type_of_node: NodeType = NodeType.UNKNOWN
-        rule_book: dict[NodeType, list[Callable[[BtreeNode | int], bool]]] = { 
-            NodeType.ROOT: [*nonl_invari_rule, lambda node: node.get_leaf_status() or len(node.get_children()) >= 2], 
-            NodeType.INNER: [*nonl_invari_rule, lambda node: len(node.get_children()) > math.ceil(self.max_keys / 2)],
-            NodeType.LEAF: [lambda node: len(node.get_children()) == 0],
-            # NodeType.UNKNOWN: []
+        rule_book: dict[NodeType, dict[InvariantCheck, list[Callable[[BtreeNode], bool]]]] = { 
+            NodeType.LEAF: {
+                InvariantCheck.CHILDREN: [lambda node: len(node.get_children()) == 0],
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.ceil(self.max_keys / 2)]
+            },
+            NodeType.ROOT: {
+                InvariantCheck.CHILDREN: [
+                    lambda node: node.get_leaf_status() and len(node.get_children()) == 0, 
+                    lambda node: not node.get_leaf_status() and self.max_keys + 1 >= len(node.get_children()) >= 2
+                    ],
+                InvariantCheck.KEYS: [
+                    lambda node: node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 0,
+                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1]
+            },
+            NodeType.INNER: {
+                InvariantCheck.CHILDREN: [lambda node: self.max_keys + 1 >= len(node.get_children()) >= math.floor(self.max_keys / 2) + 1],
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.floor(self.max_keys / 2)]
+            }
+            # NodeType.UNKNOWN: {}
             }
 
         while len(queue) != 0:
@@ -184,10 +201,18 @@ class Btree:
                 type_of_node = NodeType.LEAF
 
             # Validate the node
-            rules: list[Callable[[BtreeNode], bool]] = rule_book[type_of_node]
-            checks: list[bool] = [rule(current_node) for rule in rules]
-            
-            if False in checks or (is_leaf and current_node_level != lowest_level):
+            # Type is messy but it is just a key -> list of lambdas
+            rules: dict[InvariantCheck, list[Callable[[BtreeNode], bool]] | Callable[[BtreeNode], bool]] = rule_book[type_of_node]
+            # checks: list[bool | list[bool]] = [[check(current_node) for check in rules[rule]] for rule in rules if isinstance(rules[rule], list)] 
+
+
+            # Pretty cool nested comprehension, you can get a filtered result using the ':=' operator to call the lambda and only return a specific value
+            # checks: list[list[bool]] = [[result for check in rules[rule] if (result := check(current_node) == True)] for rule in rules]
+            checks: list[list[InvariantCheck]] = [[rule for check in rules[rule] if check(current_node) == True] for rule in rules]
+            aggregated_checks: list[InvariantCheck] = [result for sublist in checks for result in sublist]
+
+            if len(set([InvariantCheck.CHILDREN, InvariantCheck.KEYS]) & set(aggregated_checks)) != 2 or (is_leaf and current_node_level != lowest_level):
+                # print('Satified these conditions:', aggregated_checks)
                 return current_node
 
             # Add more nodes to the buffer
