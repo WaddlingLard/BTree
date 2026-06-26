@@ -69,8 +69,17 @@ class BtreeNode:
         self.parent = parent
     
     # Search - searches for the item inside the current node
-    def search(self, item) -> int:
-        return binary_search(self.node, item)
+    # Params:
+    #   search_method (Callable[[list[any], object], int]) - generic search that takes in a list and an item to search for
+    #   item (object) - item to be searched for
+    # Returns tuple[SearchResult, int] - the search result and the index corresponding to that result
+    def search(
+            self, 
+            search_method: Callable[[list[any], object], int], 
+            item: object,
+            **additional_params
+            ) -> tuple[SearchResult, int]:
+        return search_method(self.node, item, **additional_params)
     
     # Split the node with a provided range
     # Params:
