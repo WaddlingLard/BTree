@@ -204,11 +204,18 @@ def test_not_exists_after_insert_root_btree():
     assert btree.validate_invariants() == None
     del btree
 
+def test_insert_preexisting_btree(capsys):
+    btree: Btree = Btree(4)
     
-#     btree.insert(1)
+    btree.insert(1)
+    btree.insert(1)
 
-#     assert btree.exists(2) == False
-#     del btree
+    streams = capsys.readouterr()
+    assert streams.out == 'Key is already present in the Btree!\n'
+
+    assert btree.exists(2) == None
+    assert btree.validate_invariants() == None
+    del btree
 
 def test_insert_split_full_root_check_root_btree():
     btree: Btree = Btree(4)
@@ -287,7 +294,7 @@ def test_insert_split_full_left_child_validate_children_btree():
     assert btree._get_root().print_node() == str([0,3])
     assert btree.validate_invariants() == None
 
-    del btree
+    del btree1
 
 # def test_insert_recursive_split_on_full_root_validate_btree():
     # btree: Btree = split_btree_2
@@ -323,6 +330,10 @@ def test_insert_full_root_no_split_check_root_btree():
     # Disabled splitting so 10 stays in the root
     btree.insert(10, True)
     
+    assert btree.exists(10) == btree._get_root()
+    assert btree.validate_invariants() != None
+
+    del btree
 
 def test_delete_single_element_root_btree():
     btree: Btree = Btree(4)
@@ -434,7 +445,7 @@ def test_insert_full_btreenode():
 
     # Node violates the invariant
     assert node.insert(5) == False
-    assert binary_search(node.node, 5) == 4
+    assert binary_search(node.node, 5)[1] == 4
     del node
 
 def test_insert_till_full_btreenode():
@@ -446,7 +457,7 @@ def test_insert_till_full_btreenode():
 
     assert node.insert(4) == True
     assert node.insert(5) == False
-    assert binary_search(node.node, 5) == 4
+    assert binary_search(node.node, 5)[1] == 4
     del node
 
 def test_insert_duplicate_key_btreenode():
