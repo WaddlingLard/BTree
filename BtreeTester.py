@@ -52,87 +52,87 @@ def split_btree_2() -> Btree:
 def test_search_single_element_success():
     vals: list[int] = [1]
 
-    assert binary_search(vals, 1) == 0
+    assert binary_search(vals, 1)[1] == 0
 
 # def test_search_single_element_failure():
 #     vals: list[int] = [1]
 
-#     assert binary_search(vals, 2) == -1
+#     assert binary_search(vals, 2)[1] == -1
 
 def test_search_single_element_failure():
     vals: list[int] = [2]
 
-    assert binary_search(vals, 1) == -1
+    assert binary_search(vals, 1)[1] == -1
 
 def test_search_double_element_success():
     vals: list[int] = [1,2]
 
-    assert binary_search(vals, 2) == 1
+    assert binary_search(vals, 2)[1] == 1
 
 def test_search_double_element_failure():
     vals: list[int] = [1,2]
 
-    assert binary_search(vals, 3) == -1
+    assert binary_search(vals, 3)[1] == -1
 
 def test_search_multi_element_success():
     vals: list[int] = [1,2,3]
     
-    assert binary_search(vals, 3) == 2
+    assert binary_search(vals, 3)[1] == 2
 
 def test_search_multi_element_failure():
     vals: list[int] = [1,2,3]
     
-    assert binary_search(vals, 4) == -1
+    assert binary_search(vals, 4)[1] == -1
 
 def test_search_many_element_success():
     vals: list[int] = [1,2,3,4,5,6,7,8,9,10]
     
-    assert binary_search(vals, 10) == 9
+    assert binary_search(vals, 10)[1] == 9
 
 def test_search_many_element_failure():
     vals: list[int] = [1,2,3,4,5,7,8,9,10,11]
     
-    assert binary_search(vals, 6) == -1
+    assert binary_search(vals, 6)[1] == -1
 
 def test_child_search_single_element_left_child():
     vals: list[int] = [3]
 
-    assert child_search(vals, 0) == 0
+    assert child_search(vals, 0)[1] == 0
 
 def test_child_search_single_element_right_child():
     vals: list[int] = [3]
 
-    assert child_search(vals, 5) == 1
+    assert child_search(vals, 5)[1] == 1
 
 def test_child_search_two_element_left_child():
     vals: list[int] = [3, 7]
     
-    assert child_search(vals, 0) == 0
+    assert child_search(vals, 0)[1] == 0
 
 def test_child_search_two_element_middle_child():
     vals: list[int] = [3, 7]
     
-    assert child_search(vals, 4) == 1
+    assert child_search(vals, 4)[1] == 1
 
 def test_child_search_two_element_last_child():
     vals: list[int] = [3, 7]
     
-    assert child_search(vals, 8) == 2
+    assert child_search(vals, 8)[1] == 2
 
 def test_child_search_multi_element_leftmost_child():
     vals: list[int] = [1, 6, 11, 39, 100, 1356]
 
-    assert child_search(vals, 0) == 0
+    assert child_search(vals, 0)[1] == 0
 
 def test_child_search_multi_element_inner_child():
     vals: list[int] = [1, 6, 11, 39, 100, 1356]
 
-    assert child_search(vals, 54) == 4
+    assert child_search(vals, 54)[1] == 4
 
 def test_child_search_multi_element_rightmost_child():
     vals: list[int] = [1, 6, 11, 39, 100, 1356]
 
-    assert child_search(vals, 2000) == 6
+    assert child_search(vals, 2000)[1] == 6
 
 # -------------------------------
 ## BTREE TESTS
