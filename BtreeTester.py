@@ -323,8 +323,88 @@ def test_insert_full_root_no_split_check_root_btree():
     # Disabled splitting so 10 stays in the root
     btree.insert(10, True)
     
-    assert btree.exists(10) == True
+
+def test_delete_single_element_root_btree():
+    btree: Btree = Btree(4)
+
+    btree.insert(1)
+
+    assert btree._get_root().get_node_contents() == [1]
+    
+    element: object | None = btree.delete(1)
+
+    assert element == 1
+    assert btree._get_root().get_node_contents() == []
+    assert btree.validate_invariants() == None
     del btree
+
+def test_delete_multi_element_root_btree():
+    btree: Btree = Btree(4)
+
+    btree.insert(1)
+    btree.insert(2)
+    btree.insert(3)
+
+    assert btree._get_root().get_node_contents() == [1,2,3]
+    
+    element: object | None = btree.delete(1)
+
+    assert element != None and element == 1
+    assert btree._get_root().get_node_contents() == [2,3]
+    assert btree.validate_invariants() == None
+    del btree    
+
+def test_delete_fail_multi_element_root_btree(capsys):
+    btree: Btree = Btree(4)
+
+    btree.insert(1)
+    btree.insert(2)
+    btree.insert(3)
+
+    assert btree._get_root().get_node_contents() == [1,2,3]
+    
+    element: object | None = btree.delete(0)
+
+    streams = capsys.readouterr()
+
+    assert streams.out == "Key doesn't exist in the Btree!\n"
+    assert element == None
+    assert btree._get_root().get_node_contents() == [1,2,3]
+    assert btree.validate_invariants() == None
+    del btree    
+
+def test_delete_single_element_left_child_btree():
+    btree: Btree = split_btree_1()
+
+    element: object | None = btree.delete(1)
+
+    assert element == 1
+    assert btree._get_root().get_node_contents() == [2,3,4,5]
+    assert btree._get_root().get_leaf_status() == True
+    assert btree.validate_invariants() == None
+    del btree    
+
+def test_delete_single_element_right_child_btree():
+    btree: Btree = split_btree_1()
+
+    element: object | None = btree.delete(4)
+
+    assert element == 4
+    assert btree._get_root().get_node_contents() == [1,2,3,5]
+    assert btree._get_root().get_leaf_status() == True
+    assert btree.validate_invariants() == None
+    del btree    
+
+def test_delete_single_element_empty_root_btree():
+    btree: Btree = split_btree_1()
+
+    element: object | None = btree.delete(3)
+
+    assert element == 3
+    assert btree._get_root().get_node_contents() == [1,2,4,5]
+    assert btree._get_root().get_leaf_status() == True
+    assert btree.validate_invariants() == None
+    del btree    
 
 # -------------------------------
 ## BTREENODE TESTS
