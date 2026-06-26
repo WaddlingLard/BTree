@@ -147,17 +147,18 @@ class Btree:
     # A handy method to validate all invariants for the Btree
     # and it will return the fussy BtreeNode that is violating the constraint
     # NOTE: Should this account for multiple violations? Is that even possible?
-    def validate_invariants(self) -> BtreeNode | None:
 
-        class NodeType(Enum):
-            ROOT = 'root',
-            INNER = 'inner',
-            LEAF = 'leaf',
-            UNKNOWN = 'unknown'
+        invariant_checks: set = set([InvariantCheck.CHILDREN, InvariantCheck.KEYS, InvariantCheck.SORT])
 
-        class InvariantCheck(Enum):
-            CHILDREN = 'children',
-            KEYS = 'keys'
+        def sort_check(items: list[object], prev_value: object) -> bool:
+            if len(items) == 1:
+                return True
+            elif prev_value > items[0]:
+                return False
+            else:
+                return sort_check(items[1:], items[0])
+
+        sort_rule: Callable[[BtreeNode], bool] = lambda node: len(node.get_node_contents()) == 0 or sort_check(node.get_node_contents(), node.get_node_contents()[0]) 
 
         node_level: int = 0
         lowest_level: int | None = None
@@ -168,7 +169,8 @@ class Btree:
         rule_book: dict[NodeType, dict[InvariantCheck, list[Callable[[BtreeNode], bool]]]] = { 
             NodeType.LEAF: {
                 InvariantCheck.CHILDREN: [lambda node: len(node.get_children()) == 0],
-                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.ceil(self.max_keys / 2)]
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.ceil(self.max_keys / 2)],
+                InvariantCheck.SORT: [sort_rule]
             },
             NodeType.ROOT: {
                 InvariantCheck.CHILDREN: [
@@ -177,11 +179,13 @@ class Btree:
                     ],
                 InvariantCheck.KEYS: [
                     lambda node: node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 0,
-                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1]
+                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1],
+                InvariantCheck.SORT: [sort_rule]
             },
             NodeType.INNER: {
                 InvariantCheck.CHILDREN: [lambda node: self.max_keys + 1 >= len(node.get_children()) >= math.floor(self.max_keys / 2) + 1],
-                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.floor(self.max_keys / 2)]
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.floor(self.max_keys / 2)],
+                InvariantCheck.SORT: [sort_rule]
             }
             # NodeType.UNKNOWN: {}
             }
