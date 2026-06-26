@@ -137,12 +137,76 @@ class Btree:
         
         if node_location == None:
             print("Key doesn't exist in the Btree!")
+            return None
+
+        key: object
+        deleted_at_index: int
 
         # Simple deletion for now
-        returned_key: object = node_location.delete(key)
+        deleted_key: tuple[object, int] = node_location.delete(key)
+        key, deleted_at_index = deleted_key
 
-        return returned_key
 
+        violation: tuple[BtreeNode, list[InvariantCheck]] | None = self.validate_invariants()
+
+        # Deletion didn't mess up the tree. Yay!
+        if violation == None:
+            return key
+        
+        violated_node: BtreeNode
+        violation_types: list[InvariantCheck]
+
+        # What if violation of keys and children?
+        while violation != None:
+            
+            violated_node, violation_types = violation
+
+            # Basic strategy of dealing with a violation [if a child] (InvariantCheck.KEY)
+            # A) Merge parent
+            # B) Merge with neighboring child (most inwards, does that make sense?)
+            # C) Set as root
+            index: int = 0
+            parent_node: BtreeNode | None = violated_node.get_parent()
+            
+            if parent_node == None:
+                # We are at the root, NOTE: have to consider inner nodes too
+                # A) Pull key from child, need to account for deeper levels
+                root_children: list[BtreeNode] = violated_node.get_children()
+
+                lchild_of_del_key: BtreeNode = root_children[deleted_at_index]
+                rchild_of_del_key: BtreeNode = root_children[deleted_at_index + 1]
+
+                shifted_key: object = lchild_of_del_key.delete_at(lchild_of_del_key.get_size() - 1)
+                violated_node.insert(shifted_key)
+
+            else:
+                child_nodes: list[BtreeNode] = parent_node.get_children()
+                for i, child_node in enumerate(child_nodes):
+                    if violated_node == child_node:
+                        index = i
+                        break
+                
+                # Will grab the child 'left' to it if the current index 
+                # is above the middle (math.floor(children / 2)), else 'right'
+                neighb_location: NodeLocation = NodeLocation.LEFT if index >= math.floor(len(child_nodes) / 2) else NodeLocation.RIGHT
+                # print(neighb_location.value)
+                neighbor_node: BtreeNode = child_nodes[index + neighb_location.value]
+                
+                # Execute the merges
+                violated_node.merge(parent_node, neighb_location)
+                violated_node.merge(neighbor_node, neighb_location)
+
+                # Delete the previous nodes and do proper root reassignment case
+                if parent_node == self.root:
+                    self.root = violated_node
+                
+                del parent_node
+                del neighbor_node
+
+            # Check to see if new violation occurred
+            violation = self.validate_invariants()
+
+        return key
 
     # A handy method to validate all invariants for the Btree
     # and it will return the fussy BtreeNode that is violating the constraint
