@@ -211,6 +211,7 @@ class Btree:
     # A handy method to validate all invariants for the Btree
     # and it will return the fussy BtreeNode that is violating the constraint
     # NOTE: Should this account for multiple violations? Is that even possible?
+    def validate_invariants(self, specified_node: BtreeNode | None = None) -> tuple[BtreeNode, list[InvariantCheck]] | None:
 
         invariant_checks: set = set([InvariantCheck.CHILDREN, InvariantCheck.KEYS, InvariantCheck.SORT])
 
@@ -243,7 +244,7 @@ class Btree:
                     ],
                 InvariantCheck.KEYS: [
                     lambda node: node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 0,
-                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1],
+                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1 and len(node.get_node_contents()) + 1 == len(node.get_children())],
                 InvariantCheck.SORT: [sort_rule]
             },
             NodeType.INNER: {
@@ -264,7 +265,7 @@ class Btree:
 
             if len(current_node.get_node_contents()) > self.max_keys:
                 # Key size invariant violated
-                return current_node
+                return current_node, [InvariantCheck.KEYS]
 
             # Find what node it is
             if current_node == self.root:
@@ -288,9 +289,10 @@ class Btree:
             checks: list[list[InvariantCheck]] = [[rule for check in rules[rule] if check(current_node) == True] for rule in rules]
             aggregated_checks: list[InvariantCheck] = [result for sublist in checks for result in sublist]
 
-            if len(set([InvariantCheck.CHILDREN, InvariantCheck.KEYS]) & set(aggregated_checks)) != 2 or (is_leaf and current_node_level != lowest_level):
-                # print('Satified these conditions:', aggregated_checks)
-                return current_node
+            # NOTE: NEED TO PROPERLY HANDLE UNEVEN LEAF LAYER
+            if len((invariant_checks) & set(aggregated_checks)) != len(invariant_checks) or (is_leaf and current_node_level != lowest_level):
+                print('Failed these conditions:', aggregated_checks, type_of_node)
+                return current_node, list(invariant_checks ^ set(aggregated_checks))
 
             # Add more nodes to the buffer
             if not is_leaf:
