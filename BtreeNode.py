@@ -6,7 +6,7 @@ class BtreeNode:
     def __init__(
             self, 
             keys: int, 
-            existing_keys: list[Any] | Any | None = None, 
+            existing_keys: list[object] | object | None = None, 
             is_leaf: bool = True, 
             children: list[Self] | Self | None = None,
             parent: Self | None = None,
@@ -16,7 +16,7 @@ class BtreeNode:
         # if existing_keys != None and not isinstance(existing_keys, list):
         #     existing_keys: list[T] = [existing_keys]
 
-        self.node: list[any] = existing_keys if existing_keys != None else []
+        self.node: list[object] = existing_keys if existing_keys != None else []
         self.children: list[Self] = children if children != None else []
         self.node_size: int = keys
         self.is_leaf: bool = is_leaf
@@ -26,9 +26,11 @@ class BtreeNode:
     # Insert - insert an element into the node
     # Params:
     #   item - a generic that can be compared (wip)
+    #   location_bypass - providing a location circumvents the whole process and immediatly appends to
+    #   the respective location LEFT <- [collection] -> RIGHT
     #   compartor() - sorts the insertion correctly (UNUSED)
     # Returns (bool) - Are the invariants valid?
-    def insert(self, item) -> bool:
+    def insert(self, item: object | list[object]) -> bool:
 
         # Size check, cannot add more than limit but should consider to handle in Btree instead of here
         # if self.node_size == len(self.node):
