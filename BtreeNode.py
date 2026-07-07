@@ -62,6 +62,36 @@ class BtreeNode:
     def insert_child(self, child_node: Self, index: int) -> None:
         self.children.insert(index, child_node)
 
+    # Merge with another node, children and all
+    # Params:
+    #   merging_node (BtreeNode) - the merger
+    def merge(self, merging_node: Self, relative_position: NodeLocation):
+        if merging_node == self.get_parent():
+            # Only get one key from the parent
+            
+            
+            pass
+        
+        if relative_position == NodeLocation.LEFT:
+            merging_node.node.extend(self.node)
+            self.node = merging_node.node.copy()
+        elif merging_node == self.get_parent():
+
+            pass
+        else:
+            self.node.extend(merging_node.get_node_contents())
+
+        # Flatten the list
+        # def flatten(node_list: list[list[object] | object]):
+
+    # Merges the parent by grabbing the key that is respective to the child node
+    def merge_parent(self, parent_node: Self, child_neighb_location: NodeLocation):
+        children: list[Self] = parent_node.get_children()
+        for index, child in enumerate(children):
+            if self == child:
+                parent_node.delete_at(index if child_neighb_location == NodeLocation.LEFT else index - 1)
+                parent_node.split_children()
+
     # Assigns the child node with a parent node
     # Params:
     #   parent (BtreeNode) - The node higher up the tree relative to the child (self)
