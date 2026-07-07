@@ -304,19 +304,32 @@ class Btree:
             queue.extend([(node, node_level) for node in buffer])
             buffer.clear()
 
-    # From the root, collect all the children and return them (unsure how to do order)
-    # Params:
-    #   method_of_retrieval - depth or breadth
-    # Returns (list[BtreeNode]) - children
-    def retrieve_children(self) -> list[BtreeNode]:
-        # Just getting from root, will need to implement recursive gathering
-        children: list[BtreeNode] = []
-        children.extend(self.root.get_children())
-        return children
+        return None
 
-    def output_root(self) -> str:
-        # return print(self.root.print_node())
-        return self.root.print_node()
+    # W.I.P
+    def count_total_nodes(self) -> int:
+        pass
+
+    # From the root, collect all the children and return them (unsure how to do order)
+    # I think this is on a per node basis, root default
+    # NOTE: METHOD FOR TESTING PURPOSES
+    #### UNCERTAIN TO KEEP: Params:
+    #### UNCERTAIN TO KEEP:   method_of_retrieval - depth or breadth
+    # Returns (list[BtreeNode]) - children
+    def _retrieve_children(self, parent_node: BtreeNode | None = None) -> list[BtreeNode]:
+        # Just getting from root, will need to implement recursive gathering
+        node_to_copy: BtreeNode = parent_node if parent_node else self.root
+        return node_to_copy.get_children().copy()
+
+    # A getter used for testing purposes currently
+    # Returns (BtreeNode) - root of Btree
+    def _get_root(self) -> BtreeNode:
+        # Likely shouldn't be accessed for actual, use. Might remove
+        return self.root
+
+    def output_root(self) -> None:
+        print(self.root.print_node())
+        # return self.root.print_node()
 
     # Outputs the whole tree, useful for debugging
     def output_tree(self) -> None:
