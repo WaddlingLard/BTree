@@ -1,10 +1,21 @@
-from BtreeNode import BtreeNode
-from search_methods import child_search as amber_alert, binary_search as search
+from BtreeNode import BtreeNode, NodeLocation
+from search_methods import child_search as amber_alert, binary_search, SearchResult
 import math
 from typing import Literal
 from collections.abc import Callable
 from enum import Enum
 # from string.templatelib import Template
+
+class NodeType(Enum):
+    ROOT = 'root',
+    INNER = 'inner',
+    LEAF = 'leaf',
+    UNKNOWN = 'unknown'
+
+class InvariantCheck(Enum):
+    CHILDREN = 'children',
+    KEYS = 'keys',
+    SORT = 'sort'
 
 class Btree:
 
