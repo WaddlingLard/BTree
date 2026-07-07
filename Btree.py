@@ -383,15 +383,35 @@ class Btree:
 if __name__ == '__main__':
     print('Hello, World!')
 
-    btree = Btree(4)
+    values: list[int] = [1,2,3,4,5]
+    btree: Btree = Btree(4)
+
+    btree.insert(0)
     btree.insert(1)
-    btree.insert(4)
+    btree.insert(2)
     btree.insert(3)
+    btree.insert(4)
+    btree.insert(5)
     btree.insert(6)
+    btree.insert(7)
+    btree.insert(8)
+    btree.insert(9)
     btree.insert(10)
-    # btree.insert(10)
-    # btree.insert(76)
-    # btree.output_tree()
-    btree.output_root()
+
+    # Insertions will create a split
+    # for x in values:
+    #     btree.insert(x, True)
+    # invalid_node: BtreeNode | None = btree.validate_invariants()
+    # if invalid_node:
+    #     print(invalid_node.get_node_contents())
+
+    # print(btree.exists(5))
+    # btree.delete(1)
+    btree.delete(2)
+    # btree.delete(3)
+    # btree.delete(4)
+
+    print(btree.validate_invariants())
+    print(btree.output_tree())
 
     del btree
