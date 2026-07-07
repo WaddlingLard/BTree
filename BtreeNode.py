@@ -154,9 +154,17 @@ class BtreeNode:
     # Gets the children of the node
     # Returns (list[BtreeNode]) - The children objects
     def get_children(self) -> list[Self]:
-        return [*self.children]
+        return self.children
+
+    # Gets a specific child via the index
+    # Returns BtreeNode - The child
+    def get_child(self, index: int) -> Self:
+        return self.children[index]
     
-    def get_parental_status(self) -> Self:
+    # def get_head_key(self) -> object:
+    #     return len(self.node) == 0 and self.node[0] or self.node[len(self.node) - 1]
+
+    def get_parent(self) -> Self | None:
         return self.parent
 
     def get_size(self) -> int:
@@ -164,6 +172,11 @@ class BtreeNode:
     
     def get_node_contents(self) -> list[any]:
         return [*self.node]
+
+    def get_key(self, index: int) -> object | None:
+        if index > len(self.node) - 1:
+            return None
+        return self.node[index]
 
     # def get_max_size(self) -> int:
     #     return self.node_size
