@@ -141,7 +141,7 @@ class Btree:
 
     
     # This is going to be a tricky method, many cases to account for and recursion is likely
-    def delete(self, key: object) -> object:
+    def delete(self, key: object) -> object | None:
 
         # Locate which node contains the value
         node_location: BtreeNode = self.exists(key)
@@ -189,7 +189,7 @@ class Btree:
 
                 shifted_key: object = lchild_of_del_key.delete_at(lchild_of_del_key.get_size() - 1)
                 violated_node.insert(shifted_key)
-
+                print('borrowed key!')
             else:
                 child_nodes: list[BtreeNode] = parent_node.get_children()
                 for i, child_node in enumerate(child_nodes):
@@ -204,13 +204,18 @@ class Btree:
                 neighbor_node: BtreeNode = child_nodes[index + neighb_location.value]
                 
                 # Execute the merges
-                violated_node.merge(parent_node, neighb_location)
+                # BUG: When a merge executes, you need to consider the range of values that are acceptable to merge from
+                # for example, you can only grab one parent node key value and then the child that is adjacent. Anything
+                # else that is grabbed would then be violating the key -> children relationship
+                violated_node.merge_parent(parent_node, neighb_location)
+                
+                # violated_node.merge(parent_node, neighb_location)
                 violated_node.merge(neighbor_node, neighb_location)
 
                 # Delete the previous nodes and do proper root reassignment case
                 if parent_node == self.root:
                     self.root = violated_node
-                
+
                 del parent_node
                 del neighbor_node
 
