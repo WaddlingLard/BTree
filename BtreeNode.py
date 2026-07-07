@@ -55,6 +55,18 @@ class BtreeNode:
         # Do we need to split?
         return self.node_size >= len(self.node)
 
+    # Finds the key and "deletes" it
+    # Params:
+    #   item (object) - The item to be deleted
+    # Returns tuple[object, int] - The "deleted" item paired with its index
+    def delete(self, item: object) -> tuple[object, int]:
+        index_location: int = self.search(binary_search, item)[1]
+        return self.node.pop(index_location), index_location
+
+    #
+    def delete_at(self, index: int) -> object:
+        return self.node.pop(index)
+
     # Insert a child into the list of children
     # Params:
     #   child_node (BtreeNode) - child to insert from a split node
