@@ -94,7 +94,7 @@ class Btree:
             has_children: bool = len(extracted_children) != 0
 
             # Retrieve parent if exists
-            parent_node: BtreeNode | None = current_node.get_parental_status()
+            parent_node: BtreeNode | None = current_node.get_parent()
 
             # If parent_node is None that means this must be the root
             # Create and prepare nodes
@@ -112,7 +112,7 @@ class Btree:
                 # Since we are always creating a right child, the index for the child node relative
                 # to the key index should be +1
                 valid_invariant = parent_node.insert(middle_key)
-                parent_node.insert_child(right_child, parent_node.search(middle_key) + 1)            
+                parent_node.insert_child(right_child, parent_node.search(binary_search, middle_key)[1] + 1)            
                 current_node = parent_node
 
             else:
@@ -272,7 +272,7 @@ class Btree:
                 # Root can also be setting the lowest_level invar check
                 lowest_level = current_node_level if is_leaf else None
                 type_of_node = NodeType.ROOT
-            elif not is_leaf and current_node.get_parental_status() != None:
+            elif not is_leaf and current_node.get_parent() != None:
                 type_of_node = NodeType.INNER
             elif is_leaf:
                 lowest_level = current_node_level if lowest_level == None else lowest_level
