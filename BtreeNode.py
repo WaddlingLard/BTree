@@ -1,5 +1,10 @@
-from typing import Any, Self
-from search_methods import binary_search
+from typing import Any, Self, Callable, Literal
+from enum import Enum
+from search_methods import binary_search, child_search, SearchResult
+
+class NodeLocation(Enum):
+    RIGHT = 1
+    LEFT = -1
 
 class BtreeNode:
 
