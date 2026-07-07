@@ -1,21 +1,35 @@
 import math
 from typing import Literal
+from enum import Enum
+
+class SearchResult(Enum):
+    FOUND_ITEM = 'found',
+    CHILD_LOCATED = 'child_located',
+    NOT_FOUND = 'not_found'
 
 # An implementation of binary search
-def binary_search(list_of_vals, searching_for) -> int:
+# Params:
+#   list_of_vals (list[object])
+#   searching_for (object)
+# Returns tuple[SearchResult, int] - the search result and the index corresponding to that result
+def binary_search(
+        list_of_vals: list[object], 
+        searching_for: object, 
+        # return_last_index: bool = False
+        ) -> tuple[SearchResult, int]:
     
-    values: list[any] = list_of_vals
+    values: list[object] = list_of_vals
     
-    upper = len(values) - 1
-    lower = 0
+    upper: int = len(values) - 1
+    lower: int = 0
 
     while True:
 
         middle = math.floor((upper + lower) / 2)
         if (upper < lower):
-            return -1
+            return SearchResult.NOT_FOUND, -1
         elif(values[middle] == searching_for):
-            return middle
+            return SearchResult.FOUND_ITEM, middle
         elif(values[middle] > searching_for):
             # Search Bottom Half
             upper = middle - 1       
@@ -28,10 +42,18 @@ def binary_search(list_of_vals, searching_for) -> int:
 # Params:
 #   list_of_vals (list[any]) - The values contained in the node
 #   value_to_insert (any) - The value that will be inserted into the tree (is comparable)
-# Returns (int) - the index of the child for the child list
-def child_search(list_of_vals: list[any], value_to_insert: any):
+# Returns tuple[SearchResult, int] - the search result and the index corresponding to that result
+def child_search(
+        list_of_vals: list[object], 
+        value_to_insert: object, 
+        ignore_hit: bool = True
+        ) -> tuple[SearchResult, int]:
     
-    values: list[any] = list_of_vals
+    # params = locals()
+    # print(params)
+
+
+    values: list[object] = list_of_vals
 
     upper: int = len(values) - 1
     middle: int = 0
@@ -48,7 +70,9 @@ def child_search(list_of_vals: list[any], value_to_insert: any):
         # Unneeded because duplicates will never be found
         # Idk maybe I'll throw an error if this ever happens just in case
         elif (values[middle] == value_to_insert):
-            raise Exception('Error: Found item attempting to insert!')
+            # print(f'returning: {SearchResult.FOUND_ITEM}, {middle} ')
+            return (SearchResult.FOUND_ITEM, middle) if not ignore_hit else (SearchResult.NOT_FOUND, -1)
+            # raise Exception('Error: Found item attempting to insert!')
             # return middle
         elif (values[middle] < value_to_insert):
             lower = middle + 1
@@ -63,10 +87,7 @@ def child_search(list_of_vals: list[any], value_to_insert: any):
     # it will determine the child index relative to the key index.
     # Greater than indicates a +1 to the key index (middle)
     # and Less than is just the index itself.
-    if relation == 'gt':
-        return prev_middle + 1
-    else:
-        return prev_middle    
+    return SearchResult.CHILD_LOCATED, prev_middle + 1 if relation == 'gt' else prev_middle
 
 # if __name__ == '__main__':
 #     numbers = [1,2,3,4,5,6,7,8,9,10]
