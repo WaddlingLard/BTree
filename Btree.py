@@ -141,7 +141,8 @@ class Btree:
 
     
     # This is going to be a tricky method, many cases to account for and recursion is likely
-    def delete(self, key: object) -> object | None:
+
+        # iterations: int = 0
 
         # Locate which node contains the value
         node_location: BtreeNode = self.exists(key)
@@ -170,6 +171,8 @@ class Btree:
         # What if violation of keys and children?
         while violation != None:
             
+            # iterations += 1
+
             violated_node, violation_types = violation
 
             # Basic strategy of dealing with a violation [if a child] (InvariantCheck.KEY)
@@ -215,9 +218,15 @@ class Btree:
                 # Delete the previous nodes and do proper root reassignment case
                 if parent_node == self.root:
                     self.root = violated_node
+                    del parent_node
 
-                del parent_node
                 del neighbor_node
+
+                print(violated_node.get_keys())
+
+            # if iterations > 5:
+            #     break
+
 
             # Check to see if new violation occurred
             violation = self.validate_invariants()
