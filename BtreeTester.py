@@ -164,14 +164,14 @@ def test_exists_root_btree():
 def test_exists_left_node_btree():
     btree: Btree = split_btree_1()
 
-    assert btree.exists(5).get_node_contents() == [4,5]
+    assert btree.exists(5).get_keys() == [4,5]
     assert btree.validate_invariants() == None
     del btree
 
 def test_exists_right_node_btree():
     btree: Btree = split_btree_1()
 
-    assert btree.exists(1).get_node_contents() == [1,2]
+    assert btree.exists(1).get_keys() == [1,2]
     assert btree.validate_invariants() == None
     del btree
 
@@ -240,7 +240,7 @@ def test_insert_split_full_root_check_root_btree():
 
     btree.insert(3)
 
-    assert f'{btree.root.get_node_contents()}' == '[3]'
+    assert f'{btree.root.get_keys()}' == '[3]'
     assert btree.validate_invariants() == None
     del btree
 
@@ -253,11 +253,11 @@ def test_insert_split_full_root_validate_children_btree():
     result: list[BtreeNode] = btree._retrieve_children()
     num_of_children = len(result)
 
-    contents: list[list[any]] = [x.get_node_contents() for x in result]
+    contents: list[list[object]] = [x.get_keys() for x in result]
 
     assert num_of_children == 2
     assert contents == [[1,2],[4,5]]
-    assert btree._get_root().get_node_contents() == [3]
+    assert btree._get_root().get_keys() == [3]
     assert btree.validate_invariants() == None
     del btree
 
@@ -283,7 +283,7 @@ def test_insert_split_full_right_child_validate_children_btree():
     result: list[BtreeNode] = btree._retrieve_children()
     num_of_children: int = len(result)
 
-    contents: list[list[any]] = [x.get_node_contents() for x in result]
+    contents: list[list[object]] = [x.get_keys() for x in result]
 
     assert num_of_children == 3
     assert contents == [[1,2],[4,5],[7,8]]
@@ -304,7 +304,7 @@ def test_insert_split_full_left_child_validate_children_btree():
     result: list[BtreeNode] = btree._retrieve_children()
     num_of_children: int = len(result)
 
-    contents: list[list[any]] = [x.get_node_contents() for x in result]
+    contents: list[list[object]] = [x.get_keys() for x in result]
 
     assert num_of_children == 3
     assert contents == [[-2,-1],[1,2],[4,5]]
@@ -357,12 +357,12 @@ def test_delete_single_element_root_btree():
 
     btree.insert(1)
 
-    assert btree._get_root().get_node_contents() == [1]
+    assert btree._get_root().get_keys() == [1]
     
     element: object | None = btree.delete(1)
 
     assert element == 1
-    assert btree._get_root().get_node_contents() == []
+    assert btree._get_root().get_keys() == []
     assert btree.validate_invariants() == None
     del btree
 
@@ -373,12 +373,12 @@ def test_delete_multi_element_root_btree():
     btree.insert(2)
     btree.insert(3)
 
-    assert btree._get_root().get_node_contents() == [1,2,3]
+    assert btree._get_root().get_keys() == [1,2,3]
     
     element: object | None = btree.delete(1)
 
     assert element != None and element == 1
-    assert btree._get_root().get_node_contents() == [2,3]
+    assert btree._get_root().get_keys() == [2,3]
     assert btree.validate_invariants() == None
     del btree    
 
@@ -389,7 +389,7 @@ def test_delete_fail_multi_element_root_btree(capsys):
     btree.insert(2)
     btree.insert(3)
 
-    assert btree._get_root().get_node_contents() == [1,2,3]
+    assert btree._get_root().get_keys() == [1,2,3]
     
     element: object | None = btree.delete(0)
 
@@ -397,7 +397,7 @@ def test_delete_fail_multi_element_root_btree(capsys):
 
     assert streams.out == "Key doesn't exist in the Btree!\n"
     assert element == None
-    assert btree._get_root().get_node_contents() == [1,2,3]
+    assert btree._get_root().get_keys() == [1,2,3]
     assert btree.validate_invariants() == None
     del btree    
 
@@ -407,8 +407,8 @@ def test_delete_single_element_left_child_btree():
     element: object | None = btree.delete(1)
 
     assert element == 1
-    assert btree._get_root().get_node_contents() == [2,3,4,5]
-    assert btree._get_root().get_leaf_status() == True
+    assert btree._get_root().get_keys() == [2,3,4,5]
+    assert btree._get_root().is_leaf() == True
     assert btree.validate_invariants() == None
     del btree    
 
@@ -418,8 +418,8 @@ def test_delete_single_element_right_child_btree():
     element: object | None = btree.delete(4)
 
     assert element == 4
-    assert btree._get_root().get_node_contents() == [1,2,3,5]
-    assert btree._get_root().get_leaf_status() == True
+    assert btree._get_root().get_keys() == [1,2,3,5]
+    assert btree._get_root().is_leaf() == True
     assert btree.validate_invariants() == None
     del btree    
 
@@ -429,8 +429,8 @@ def test_delete_single_element_empty_root_btree():
     element: object | None = btree.delete(3)
 
     assert element == 3
-    assert btree._get_root().get_node_contents() == [1,2,4,5]
-    assert btree._get_root().get_leaf_status() == True
+    assert btree._get_root().get_keys() == [1,2,4,5]
+    assert btree._get_root().is_leaf() == True
     assert btree.validate_invariants() == None
     del btree
 
@@ -440,9 +440,9 @@ def test_delete_single_element_first_key_root_btree():
     element: object | None = btree.delete(2)
 
     assert element == 2
-    assert btree._get_root().get_node_contents() == [5,8]
-    assert btree._get_root().get_children()[0].get_node_contents() == [0,1,3,4]
-    assert btree._get_root().get_leaf_status() == False
+    assert btree._get_root().get_keys() == [5,8]
+    assert btree._get_root().get_children()[0].get_keys() == [0,1,3,4]
+    assert btree._get_root().is_leaf() == False
     assert btree.validate_invariants() == None
     del btree
 
@@ -452,7 +452,7 @@ def test_delete_single_element_first_key_root_btree():
 def test_create_btreenode():
     node: BtreeNode = BtreeNode(4)
 
-    assert node.number_of_children == 0 and node.is_leaf == True and node.node_size == 4
+    assert node.number_of_children == 0 and node.leaf_status == True and node.node_size == 4
     del node
 
 def test_insert_empty_btreenode():
