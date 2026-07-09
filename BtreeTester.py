@@ -446,7 +446,22 @@ def test_delete_single_element_first_key_root_btree():
     assert btree.validate_invariants() == None
     del btree
 
-def test_delete_multiple_element_root_and_leftmost_child_btree():
+def test_delete_multiple_element_root_btree():
+    btree: Btree = split_btree_3()
+
+    element1: object | None = btree.delete(5)
+    element2: object | None = btree.delete(8)
+
+    assert element1 == 5
+    assert element2 == 8
+    assert btree._get_root().get_keys() == [3,7]
+    assert btree._get_root().get_children()[0].get_keys() == [0,1,2]
+    assert btree._get_root().get_children()[1].get_keys() == [4,6]
+    assert btree._get_root().is_leaf() == False
+    assert btree.validate_invariants() == None
+    del btree    
+
+def test_delete_multiple_element_root_rightside_and_leftmost_child_btree():
     btree: Btree = split_btree_3()
 
     element1: object | None = btree.delete(5)
@@ -466,8 +481,60 @@ def test_delete_multiple_element_root_and_leftmost_child_btree():
 
     del btree
 
-def test_delete_multiple_element_root_and_rightmost_child_btree():
-    pass
+def test_delete_multiple_element_root_leftside_and_rightmost_child_btree():
+    # btree: Btree = split_btree_3_reversed()
+    btree: Btree = split_btree_3()
+
+    element1: object | None = btree.delete(5)
+    element2: object | None = btree.delete(8)
+    
+    element3: object | None = btree.delete(0)
+
+    assert element1 == 5
+    assert element2 == 8
+    assert element3 == 0
+    assert btree._get_root().get_keys() == [3,7]
+    assert btree._get_root().get_children()[0].get_keys() == [1,2]
+    assert btree._get_root().get_children()[1].get_keys() == [4,6]
+    assert btree._get_root().is_leaf() == False
+    assert btree.validate_invariants() == None
+
+    del btree
+
+def test_delete_multiple_element_root_rightside_and_rightmost_child_btree():
+    btree: Btree = split_btree_3()
+
+    element1: object | None = btree.delete(5)
+    element2: object | None = btree.delete(8)
+
+    element3: object | None = btree.delete(10)
+
+    assert element1 == 5
+    assert element2 == 8
+    assert element3 == 10
+    assert btree._get_root().get_keys() == [3]
+    assert btree._get_root().get_children()[0].get_keys() == [0,1,2]
+    assert btree._get_root().get_children()[1].get_keys() == [4,6,7,9]
+    assert btree._get_root().is_leaf() == False
+    assert btree.validate_invariants() == None
+
+    del btree
+
+def test_delete_all_root_keys_btree():
+    btree: Btree = split_btree_3()
+
+    element1: object | None = btree.delete(2)
+    element2: object | None = btree.delete(5)
+    element3: object | None = btree.delete(8)
+
+    assert element1 == 2
+    assert element2 == 5
+    assert element3 == 8
+    assert btree._get_root().get_keys() == [3,7]
+    assert btree._get_root().get_children()[0].get_keys() == [0,1]
+    assert btree._get_root().get_children()[1].get_keys() == [4,6]
+    assert btree._get_root().is_leaf() == False
+    assert btree.validate_invariants() == None
 
 # -------------------------------
 ## BTREENODE TESTS
@@ -482,6 +549,7 @@ def test_insert_empty_btreenode():
     node: BtreeNode = BtreeNode(4)
 
     assert node.insert(1) == True
+    assert node.get_keys() == [1]
     del node
 
 def test_insert_partial_btreenode():
@@ -489,6 +557,7 @@ def test_insert_partial_btreenode():
     node.node = [1,2]
 
     assert node.insert(3) == True
+    assert node.get_keys() == [1,2,3]
     del node
 
 def test_insert_full_btreenode():
@@ -498,6 +567,7 @@ def test_insert_full_btreenode():
     # Node violates the invariant
     assert node.insert(5) == False
     assert binary_search(node.node, 5)[1] == 4
+    assert node.get_keys() == [1,2,3,4,5]
     del node
 
 def test_insert_till_full_btreenode():
@@ -510,6 +580,7 @@ def test_insert_till_full_btreenode():
     assert node.insert(4) == True
     assert node.insert(5) == False
     assert binary_search(node.node, 5)[1] == 4
+    assert node.get_keys() == [1,2,3,4,5]
     del node
 
 def test_insert_duplicate_key_btreenode():
