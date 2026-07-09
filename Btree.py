@@ -206,10 +206,7 @@ class Btree:
                 print('borrowed key!')
             else:
                 child_nodes: list[BtreeNode] = parent_node.get_children()
-                for i, child_node in enumerate(child_nodes):
-                    if violated_node == child_node:
-                        index = i
-                        break
+                index = parent_node.get_child_location(violated_node)
                 
                 # Will grab the child 'left' to it if the current index 
                 # is above the middle (math.floor(children / 2)), else 'right'

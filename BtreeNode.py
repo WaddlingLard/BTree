@@ -100,8 +100,8 @@ class BtreeNode:
     def merge_parent(self, parent_node: Self, child_neighb_location: NodeLocation):
         children: list[Self] = parent_node.get_children()
         parent_key: object | None = None
-        for index, child in enumerate(children):
-            if self == child:
+
+        child_index: int = parent_node.get_child_location(self)
 
                 # NOTE: MUST CONSIDER DIFFERENT RELATIVE LOCATIONS FOR THE KEY IN RELATION TO NEIGHBOR POSITIONING
                 parent_key = parent_node.delete_at(index + (0 if child_neighb_location == NodeLocation.RIGHT else -1))
@@ -186,6 +186,18 @@ class BtreeNode:
     def get_child(self, index: int) -> Self:
         return self.children[index]
     
+    # Gets the child location index value
+    # Params
+    #   child (BtreeNode)
+    # Returns (int) - index for succesful hit otherwise -1 if not a child of the node
+    def get_child_location(self, child: BtreeNode) -> int:
+        
+        for index, node in enumerate(self.children):
+            if child == node:
+                return index
+
+        return -1
+
     # def get_head_key(self) -> object:
     #     return len(self.node) == 0 and self.node[0] or self.node[len(self.node) - 1]
 
