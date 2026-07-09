@@ -233,6 +233,22 @@ class Btree:
 
         return key
 
+    def classify_node(self, node: BtreeNode) -> NodeType:
+
+        node_leaf_status: bool = node.is_leaf()
+        type_of_node: NodeType = NodeType.UNKNOWN
+
+        # Find what node it is
+
+        if node == self.root:
+            type_of_node = NodeType.ROOT
+        elif node_leaf_status:
+            type_of_node = NodeType.LEAF
+        elif not node_leaf_status and node.get_parent() != None:
+            type_of_node = NodeType.INNER
+
+        return type_of_node    
+
     # A handy method to validate all invariants for the Btree
     # and it will return the fussy BtreeNode that is violating the constraint
     # NOTE: Should this account for multiple violations? Is that even possible?
@@ -293,16 +309,13 @@ class Btree:
                 # Key size invariant violated
                 return current_node, [InvariantCheck.KEYS]
 
-            # Find what node it is
-            if current_node == self.root:
-                # Root can also be setting the lowest_level invar check
-                lowest_level = current_node_level if is_leaf else None
-                type_of_node = NodeType.ROOT
-            elif not is_leaf and current_node.get_parent() != None:
-                type_of_node = NodeType.INNER
-            elif is_leaf:
-                lowest_level = current_node_level if lowest_level == None else lowest_level
-                type_of_node = NodeType.LEAF
+            type_of_node: NodeType = self.classify_node(current_node)
+
+            if type_of_node == NodeType.LEAF or type_of_node == NodeType.ROOT and current_node.is_leaf():
+                if lowest_level == None:
+                    lowest_level = current_node_level
+                elif current_node_level != lowest_level:
+                    return current_node, [InvariantCheck.LEVEL]
 
             # Validate the node
             # Type is messy but it is just a key -> list of lambdas
