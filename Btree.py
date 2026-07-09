@@ -147,11 +147,12 @@ class Btree:
 
     
     # This is going to be a tricky method, many cases to account for and recursion is likely
+    def delete(self, item: object) -> object | None:
 
         # iterations: int = 0
 
         # Locate which node contains the value
-        node_location: BtreeNode = self.exists(key)
+        node_location: BtreeNode | None = self.exists(item)
         
         if node_location == None:
             print("Key doesn't exist in the Btree!")
@@ -161,7 +162,7 @@ class Btree:
         deleted_at_index: int
 
         # Simple deletion for now
-        deleted_key: tuple[object, int] = node_location.delete(key)
+        deleted_key: tuple[object, int] = node_location.delete(item)
         key, deleted_at_index = deleted_key
 
 
@@ -176,9 +177,7 @@ class Btree:
 
         # What if violation of keys and children?
         while violation != None:
-            
-            # iterations += 1
-
+        
             violated_node, violation_types = violation
 
             # Basic strategy of dealing with a violation [if a child] (InvariantCheck.KEY)
@@ -193,10 +192,16 @@ class Btree:
                 # A) Pull key from child, need to account for deeper levels
                 root_children: list[BtreeNode] = violated_node.get_children()
 
-                lchild_of_del_key: BtreeNode = root_children[deleted_at_index]
-                rchild_of_del_key: BtreeNode = root_children[deleted_at_index + 1]
+                lchild: BtreeNode = root_children[deleted_at_index]
+                rchild: BtreeNode = root_children[deleted_at_index + 1]
 
-                shifted_key: object = lchild_of_del_key.delete_at(lchild_of_del_key.get_size() - 1)
+                # Run a hypothetical to see which key to borrow, default to left but if can switch then do it
+                borrow_node: BtreeNode = lchild
+                if lchild.curr_size() - 1 < self.min_keys and rchild.curr_size() - 1 > self.min_keys:
+                    borrow_node = rchild
+
+                shifted_key: object = borrow_node.delete_at(0 if borrow_node == rchild else borrow_node.curr_size() - 1)
+                
                 violated_node.insert(shifted_key)
                 print('borrowed key!')
             else:
