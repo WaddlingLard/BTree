@@ -274,6 +274,8 @@ class Btree:
         node_level: int = 0
         lowest_level: int | None = None
 
+        starting_node: BtreeNode = specified_node or self.root
+
         queue: list[tuple[BtreeNode, int]] = [(self.root, node_level)]
 
         buffer: list[BtreeNode] = []
@@ -308,9 +310,8 @@ class Btree:
             queued_node: tuple[BtreeNode, int] = queue.pop(0)
             current_node_level: int = queued_node[1]
             current_node: BtreeNode = queued_node[0] 
-            is_leaf: bool = current_node.get_leaf_status()
 
-            if len(current_node.get_node_contents()) > self.max_keys:
+            if len(current_node.get_keys()) > self.max_keys:
                 # Key size invariant violated
                 return current_node, [InvariantCheck.KEYS]
 
@@ -324,22 +325,22 @@ class Btree:
 
             # Validate the node
             # Type is messy but it is just a key -> list of lambdas
-            rules: dict[InvariantCheck, list[Callable[[BtreeNode], bool]] | Callable[[BtreeNode], bool]] = rule_book[type_of_node]
+            rules: dict[InvariantCheck, list[Callable[[BtreeNode], bool]]] = rule_book[type_of_node]
             # checks: list[bool | list[bool]] = [[check(current_node) for check in rules[rule]] for rule in rules if isinstance(rules[rule], list)] 
-
 
             # Pretty cool nested comprehension, you can get a filtered result using the ':=' operator to call the lambda and only return a specific value
             # checks: list[list[bool]] = [[result for check in rules[rule] if (result := check(current_node) == True)] for rule in rules]
-            checks: list[list[InvariantCheck]] = [[rule for check in rules[rule] if check(current_node) == True] for rule in rules]
-            aggregated_checks: list[InvariantCheck] = [result for sublist in checks for result in sublist]
+            
+            checks: list[InvariantCheck] = [rule for rule in rules if any([check(current_node) for check in rules[rule]])]
+            # aggregated_checks: list[InvariantCheck] = [result for sublist in checks for result in sublist]
 
-            # NOTE: NEED TO PROPERLY HANDLE UNEVEN LEAF LAYER
-            if len((invariant_checks) & set(aggregated_checks)) != len(invariant_checks) or (is_leaf and current_node_level != lowest_level):
-                print('Failed these conditions:', aggregated_checks, type_of_node)
-                return current_node, list(invariant_checks ^ set(aggregated_checks))
+            if len((invariant_checks) & set(checks)) != len(invariant_checks):
+                print('Failed these conditions:', set(checks), type_of_node, current_node.get_keys())
+                print(self.output_tree())
+                return current_node, list(invariant_checks ^ set(checks))
 
             # Add more nodes to the buffer
-            if not is_leaf:
+            if specified_node == None:
                 buffer.extend(current_node.get_children())
 
             if len(queue) != 0:
