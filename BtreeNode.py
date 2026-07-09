@@ -84,21 +84,14 @@ class BtreeNode:
     # Merge with another node, children and all
     # Params:
     #   merging_node (BtreeNode) - the merger
-    def merge(self, merging_node: Self, relative_position: NodeLocation):
-        if merging_node == self.get_parent():
-            # Only get one key from the parent
-            
-            
-            pass
-        
+    def merge_neighbor(self, merging_node: Self, relative_position: NodeLocation):
         if relative_position == NodeLocation.LEFT:
-            merging_node.node.extend(self.node)
-            self.node = merging_node.node.copy()
-        elif merging_node == self.get_parent():
+            merging_node_contents: list[object] = merging_node.get_keys()
+            self_contents: list[object] = self.get_keys()
 
-            pass
+            self.node = [*merging_node_contents, *self_contents]
         else:
-            self.node.extend(merging_node.get_node_contents())
+            self.node.extend(merging_node.get_keys().copy())
 
         # Flatten the list
         # def flatten(node_list: list[list[object] | object]):
@@ -106,10 +99,23 @@ class BtreeNode:
     # Merges the parent by grabbing the key that is respective to the child node
     def merge_parent(self, parent_node: Self, child_neighb_location: NodeLocation):
         children: list[Self] = parent_node.get_children()
+        parent_key: object | None = None
         for index, child in enumerate(children):
             if self == child:
-                parent_node.delete_at(index if child_neighb_location == NodeLocation.LEFT else index - 1)
-                parent_node.split_children()
+
+                # NOTE: MUST CONSIDER DIFFERENT RELATIVE LOCATIONS FOR THE KEY IN RELATION TO NEIGHBOR POSITIONING
+                parent_key = parent_node.delete_at(index + (0 if child_neighb_location == NodeLocation.RIGHT else -1))
+                parent_node.evict_child(index + child_neighb_location.value)
+                break
+
+        if child_neighb_location == NodeLocation.LEFT:
+            # Append parent_key to the front of the node
+            self.node.insert(0, parent_key)
+        else:
+            self.node.append(parent_key)
+
+    def evict_child(self, index: int) -> Self:
+        return self.children.pop(index)
 
     # Assigns the child node with a parent node
     # Params:
