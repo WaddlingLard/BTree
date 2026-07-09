@@ -24,7 +24,7 @@ class BtreeNode:
         self.node: list[object] = existing_keys if existing_keys != None else []
         self.children: list[Self] = children if children != None else []
         self.node_size: int = keys
-        self.is_leaf: bool = is_leaf
+        self.leaf_status: bool = is_leaf
         self.number_of_children: int = keys + 1 if is_leaf is not True else 0
         self.parent: Self | None = None
 
@@ -148,8 +148,8 @@ class BtreeNode:
         self.children = self.children[:start_index]
         return children_to_extract
 
-    def get_leaf_status(self) -> bool:
-        return self.is_leaf
+    def is_leaf(self) -> bool:
+        return self.leaf_status
 
     # Gets the children of the node
     # Returns (list[BtreeNode]) - The children objects
@@ -170,8 +170,14 @@ class BtreeNode:
     def get_size(self) -> int:
         return len(self.node)
     
-    def get_node_contents(self) -> list[any]:
-        return [*self.node]
+    def get_keys(self) -> list[Any]:
+        return [*self.node.copy()]
+
+    def curr_size(self) -> int:
+        return len(self.node)
+    
+    def cldrn_size(self) -> int:
+        return len(self.children)
 
     def get_key(self, index: int) -> object | None:
         if index > len(self.node) - 1:

@@ -43,7 +43,7 @@ class Btree:
                 case (SearchResult.NOT_FOUND):
                     return None
                 case (SearchResult.CHILD_LOCATED):
-                    if current_node.get_leaf_status():
+                    if current_node.is_leaf():
                         return None
                         
                     current_node = current_node.get_child(index)
@@ -77,7 +77,7 @@ class Btree:
             print('Key is already present in the Btree!')
             return
 
-        while not current_node.get_leaf_status():
+        while not current_node.is_leaf():
 
             # Retrieve the children of that node
             child_nodes: list[BtreeNode] = current_node.get_children()
@@ -216,7 +216,7 @@ class Btree:
                 violated_node.merge(neighbor_node, neighb_location)
 
                 # Delete the previous nodes and do proper root reassignment case
-                if parent_node == self.root:
+                if parent_node.curr_size() == 0 and parent_node == self.root:
                     self.root = violated_node
                     del parent_node
 
@@ -248,33 +248,34 @@ class Btree:
             else:
                 return sort_check(items[1:], items[0])
 
-        sort_rule: Callable[[BtreeNode], bool] = lambda node: len(node.get_node_contents()) == 0 or sort_check(node.get_node_contents(), node.get_node_contents()[0]) 
+        sort_rule: Callable[[BtreeNode], bool] = lambda node: node.curr_size() == 0 or sort_check(node.get_keys(), node.get_keys()[0]) 
 
         node_level: int = 0
         lowest_level: int | None = None
 
         queue: list[tuple[BtreeNode, int]] = [(self.root, node_level)]
+
         buffer: list[BtreeNode] = []
         type_of_node: NodeType = NodeType.UNKNOWN
         rule_book: dict[NodeType, dict[InvariantCheck, list[Callable[[BtreeNode], bool]]]] = { 
             NodeType.LEAF: {
-                InvariantCheck.CHILDREN: [lambda node: len(node.get_children()) == 0],
-                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.ceil(self.max_keys / 2)],
+                InvariantCheck.CHILDREN: [lambda node: node.cldrn_size() == 0],
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= node.curr_size() >= math.ceil(self.max_keys / 2)],
                 InvariantCheck.SORT: [sort_rule]
             },
             NodeType.ROOT: {
                 InvariantCheck.CHILDREN: [
-                    lambda node: node.get_leaf_status() and len(node.get_children()) == 0, 
-                    lambda node: not node.get_leaf_status() and self.max_keys + 1 >= len(node.get_children()) >= 2
+                    lambda node: node.is_leaf() and node.cldrn_size() == 0, 
+                    lambda node: not node.is_leaf() and self.max_keys + 1 >= node.cldrn_size() >= 2
                     ],
                 InvariantCheck.KEYS: [
-                    lambda node: node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 0,
-                    lambda node: not node.get_leaf_status() and self.max_keys >= len(node.get_node_contents()) >= 1 and len(node.get_node_contents()) + 1 == len(node.get_children())],
+                    lambda node: node.is_leaf() and self.max_keys >= node.curr_size() >= 0,
+                    lambda node: not node.is_leaf() and self.max_keys >= node.curr_size() >= 1 and node.curr_size() + 1 == node.cldrn_size()],
                 InvariantCheck.SORT: [sort_rule]
             },
             NodeType.INNER: {
-                InvariantCheck.CHILDREN: [lambda node: self.max_keys + 1 >= len(node.get_children()) >= math.floor(self.max_keys / 2) + 1],
-                InvariantCheck.KEYS: [lambda node: self.max_keys >= len(node.get_node_contents()) >= math.floor(self.max_keys / 2)],
+                InvariantCheck.CHILDREN: [lambda node: self.max_keys + 1 >= node.cldrn_size() >= math.floor(self.max_keys / 2) + 1],
+                InvariantCheck.KEYS: [lambda node: self.max_keys >= node.curr_size() >= math.floor(self.max_keys / 2)],
                 InvariantCheck.SORT: [sort_rule]
             }
             # NodeType.UNKNOWN: {}
@@ -369,8 +370,8 @@ class Btree:
         # node_contents: Template = t'{[x.get_node_contents() for x in queue]}'
         # node_str: Template = t'Level: {node_level} {node_contents.interpolations[0].value}'
         
-        get_node_contents: function = lambda list_of_nodes: f'{[x.get_node_contents() for x in list_of_nodes]}'
-        create_node_str: function = lambda level, contents: f'{level} {contents}'
+        get_node_contents = lambda list_of_nodes: f'{[x.get_keys() for x in list_of_nodes]}'
+        create_node_str = lambda level, contents: f'{level} {contents}'
 
         # Holds the next layer of nodes before pushing onto the queue
         buffer: list[BtreeNode] = []
@@ -384,7 +385,7 @@ class Btree:
             
             current_node: BtreeNode = queue.pop(0)
             
-            if not current_node.get_leaf_status():
+            if not current_node.is_leaf():
                 # Load up the buffer with the children
                 buffer.extend(current_node.get_children())
 
