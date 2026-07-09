@@ -446,6 +446,29 @@ def test_delete_single_element_first_key_root_btree():
     assert btree.validate_invariants() == None
     del btree
 
+def test_delete_multiple_element_root_and_leftmost_child_btree():
+    btree: Btree = split_btree_3()
+
+    element1: object | None = btree.delete(5)
+    element2: object | None = btree.delete(8)
+    
+    # Presumed bug occurs here
+    element3: object | None = btree.delete(0)
+
+    assert element1 == 5
+    assert element2 == 8
+    assert element3 == 0
+    assert btree._get_root().get_keys() == [3,7]
+    assert btree._get_root().get_children()[0].get_keys() == [1,2]
+    assert btree._get_root().get_children()[1].get_keys() == [4,6]
+    assert btree._get_root().is_leaf() == False
+    assert btree.validate_invariants() == None
+
+    del btree
+
+def test_delete_multiple_element_root_and_rightmost_child_btree():
+    pass
+
 # -------------------------------
 ## BTREENODE TESTS
 # -------------------------------
