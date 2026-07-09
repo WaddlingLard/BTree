@@ -114,6 +114,25 @@ class BtreeNode:
         else:
             self.node.append(parent_key)
 
+    # Rotates a key in the direction of (neighbor_node -> parent_node -> self)
+    # Params
+    #   parent_node (BtreeNode)
+    #   neighbor_node (BtreeNode)
+    #   relative_position (NodeLocation) - the position where both the parent and neighbor are relative to self node
+    def rotate_key(self, parent_node: Self, neighbor_node: Self, relative_postion: NodeLocation) -> None:
+        
+        parent_key: object | None = None
+
+        child_index: int = parent_node.get_child_location(self)
+
+        # Get the keys for rotation
+        parent_key = parent_node.delete_at(child_index + (0 if relative_postion == NodeLocation.RIGHT else -1))
+        neighbor_key = neighbor_node.delete_at(0 if relative_postion == NodeLocation.RIGHT else neighbor_node.curr_size() - 1)
+        
+        # Insert the keys into the nodes to 'rotate' them
+        parent_node.insert(neighbor_key)
+        self.insert(parent_key)
+
     def evict_child(self, index: int) -> Self:
         return self.children.pop(index)
 

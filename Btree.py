@@ -216,10 +216,19 @@ class Btree:
                 # BUG: When a merge executes, you need to consider the range of values that are acceptable to merge from
                 # for example, you can only grab one parent node key value and then the child that is adjacent. Anything
                 # else that is grabbed would then be violating the key -> children relationship
-                violated_node.merge_parent(parent_node, neighb_location)
+               
+                # NEW BUG: NEED TO ACCOUNT FOR AN OVERSIZED NODE AFTER MERGES FROM A PREVIOUS ITERATION
+                # WILL LIKELY NEED TO USE CODE FROM THE INSERTION METHOD INVARIANT CHECK 
+
+                # Use this variable to know if can merge nodes, or should shift keys
+                is_possible_to_merge: bool = violated_node.curr_size() + 1 + neighbor_node.curr_size() <= self.max_keys
                 
-                # violated_node.merge(parent_node, neighb_location)
-                violated_node.merge(neighbor_node, neighb_location)
+                if is_possible_to_merge:
+                    violated_node.merge_parent(parent_node, neighb_location)
+                    violated_node.merge_neighbor(neighbor_node, neighb_location)
+                else:
+                    # Have to do a key rotation
+                    violated_node.rotate_key(parent_node, neighbor_node, neighb_location)
 
                 # Delete the previous nodes and do proper root reassignment case
                 if parent_node.curr_size() == 0 and parent_node == self.root:
