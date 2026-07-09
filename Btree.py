@@ -15,7 +15,8 @@ class NodeType(Enum):
 class InvariantCheck(Enum):
     CHILDREN = 'children',
     KEYS = 'keys',
-    SORT = 'sort'
+    SORT = 'sort',
+    LEVEL = 'level'
 
 class Btree:
 
